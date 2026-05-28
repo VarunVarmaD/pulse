@@ -15,6 +15,7 @@ const register = async(req, res) => {
         const token = jwt.sign({user_id: newUser.rows[0].user_id}, process.env.JWT_SECRET, {expiresIn: '7d'});
         res.status(200).json({token: token, msg: "Welocme to Pulse"});
     } catch(err) {
+        console.error(err);
         res.status(500).json({msg: "Something went wrong"});
     }
 
@@ -36,6 +37,7 @@ const login = async(req, res) => {
             res.status(401).json({msg: "Wrong password"});
         }
     } catch(err) {
+        console.log(err);
         res.status(500).json({msg: "Something went wrong"});
     }
 }

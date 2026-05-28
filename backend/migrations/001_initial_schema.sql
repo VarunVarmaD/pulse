@@ -3,7 +3,7 @@ CREATE TYPE monitor_status AS ENUM ('up', 'down', 'degraded');
 CREATE TABLE users
 (
     user_id       SERIAL PRIMARY KEY,
-    name          VARCHAR(50)         NOT NULL,
+    name          VARCHAR(50),
     password_hash VARCHAR(60)         NOT NULL,
     email         VARCHAR(255) UNIQUE NOT NULL,
     created_at    TIMESTAMPTZ         NOT NULL DEFAULT NOW(),
