@@ -22,7 +22,7 @@ const deleteMonitor = async (req, res) => {
         const id = req.params.id;
         const user_id = req.user;
 
-        const result = await pool.query("DELETE FROM monitors WHERE id = $1 AND user_id = $2", [id, user_id]);
+        const result = await pool.query("DELETE FROM monitors WHERE monitor_id = $1 AND user_id = $2", [id, user_id]);
         res.status(200).json({msg: "Successfully deleted monitor"});
         return;
     } catch(err) {
@@ -40,7 +40,7 @@ const updateMonitor = async (req, res) => {
         const domain_name = req.body.domain_name ? req.body.domain_name : '';
         const interval = req.body.interval;
 
-        const result = await pool.query("UPDATE monitors SET url=$1, domain_name=$2, interval=$3 WHERE id=$4 AND user_id=$5 RETURNING *", [url, domain_name, interval, id, user_id]);
+        const result = await pool.query("UPDATE monitors SET url=$1, domain_name=$2, interval=$3 WHERE monitor_id=$4 AND user_id=$5 RETURNING *", [url, domain_name, interval, id, user_id]);
         res.status(200).json(result.rows[0]);
         return;
     } catch (err) {
@@ -55,7 +55,7 @@ const fetchMonitor = async (req, res) => {
         const id = req.params.id;
         const user_id = req.user;
 
-        const result = await pool.query("SELECT * FROM monitors WHERE id = $1 AND user_id = $2", [id, user_id]);
+        const result = await pool.query("SELECT * FROM monitors WHERE monitor_id = $1 AND user_id = $2", [id, user_id]);
         res.status(200).json(result.rows[0]);
         return;
     } catch (err) {

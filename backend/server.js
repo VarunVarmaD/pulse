@@ -2,12 +2,14 @@ const express = require('express');
 const cors = require('cors');
 const pool = require('./db/pool.js');
 const authRouter = require('./routes/auth');
+const monitorRouter = require('./routes/monitor');
 
 const port = process.env.PORT || 3000;
 const app = express();
 app.use(express.json());
 app.use(cors());
 app.use('/api/auth', authRouter);
+app.use('/api/monitor', monitorRouter);
 
 app.get('/', (req, res) => {
     res.send('Welcome');
