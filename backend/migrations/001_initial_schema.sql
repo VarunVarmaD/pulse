@@ -13,7 +13,7 @@ CREATE TABLE users
 CREATE TABLE monitors
 (
     monitor_id      SERIAL PRIMARY KEY,
-    user_id         INT            NOT NULL REFERENCES users (user_id),
+    user_id   i      INT            NOT NULL REFERENCES users (user_id),
     url             VARCHAR(255)   NOT NULL,
     domain_name     VARCHAR(50),
     status          monitor_status NOT NULL DEFAULT 'up',
