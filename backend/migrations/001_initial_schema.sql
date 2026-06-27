@@ -1,7 +1,12 @@
-CREATE TYPE monitor_status AS ENUM ('up', 'down', 'degraded');
+CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE;
 
-CREATE TABLE users
-(
+DO $$ BEGIN
+    CREATE TYPE monitor_status AS ENUM ('up', 'down', 'degraded');
+EXCEPTION
+    WHEN duplicate_object THEN NULL;
+END $$;
+
+CREATE TABLE IF NOT EXISTS users (
     user_id       SERIAL PRIMARY KEY,
     name          VARCHAR(50),
     password_hash VARCHAR(60)         NOT NULL,
@@ -10,8 +15,7 @@ CREATE TABLE users
     last_login    TIMESTAMPTZ
 );
 
-CREATE TABLE monitors
-(
+CREATE TABLE IF NOT EXISTS monitors (
     monitor_id      SERIAL PRIMARY KEY,
     user_id         INT            NOT NULL REFERENCES users (user_id),
     url             VARCHAR(255)   NOT NULL,
@@ -19,26 +23,25 @@ CREATE TABLE monitors
     status          monitor_status NOT NULL DEFAULT 'up',
     status_code     INT,
     response_time   INT,
-    interval        INT,
+    interval        INT,           -- ping interval in seconds
     last_checked_at TIMESTAMPTZ,
     created_at      TIMESTAMPTZ             DEFAULT NOW()
 );
 
-CREATE TABLE checks
-(
-    check_id      SERIAL PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS checks (
+    checked_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     monitor_id    INT NOT NULL REFERENCES monitors (monitor_id),
     response_time INT,
     status_code   INT,
-    checked_at    TIMESTAMPTZ DEFAULT NOW(),
     is_successful BOOLEAN
 );
 
-CREATE TABLE incidents
-(
+CREATE TABLE IF NOT EXISTS incidents (
     incident_id SERIAL PRIMARY KEY,
     monitor_id  INT         NOT NULL REFERENCES monitors (monitor_id),
     started_at  TIMESTAMPTZ NOT NULL,
     ended_at    TIMESTAMPTZ,
     cause       VARCHAR(255)
 );
+
+SELECT create_hypertable('checks', 'checked_at', if_not_exists => TRUE);

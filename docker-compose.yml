@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   timescaledb:
     image: timescale/timescaledb:latest-pg15
@@ -26,13 +24,59 @@ services:
       - KAFKA_NODE_ID=1
       - KAFKA_PROCESS_ROLES=broker,controller
       - KAFKA_LISTENERS=PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
-      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://localhost:9092
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://pulse_kafka:9092
       - KAFKA_CONTROLLER_LISTENER_NAMES=CONTROLLER
       - KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
-      - KAFKA_CONTROLLER_QUORUM_VOTERS=1@localhost:9093
+      - KAFKA_CONTROLLER_QUORUM_VOTERS=1@pulse_kafka:9093
       - KAFKA_LOG_DIRS=/tmp/kraft-combined-logs
     networks:
       - pulse_network
+
+  express:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: pulse_express
+    restart: always
+    ports:
+      - "3000:3000"
+    depends_on:
+      - timescaledb
+      - kafka
+    networks:
+      - pulse_network
+    environment:
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - JWT_SECRET=${JWT_SECRET}
+      - PORT=${PORT}
+      - DATABASE_URL=${DATABASE_URL}
+    volumes:
+      - ./backend:/app
+    working_dir: /app
+    command: npm run dev
+
+  golang:
+    build:
+      context: ./worker
+      dockerfile: Dockerfile
+    container_name: pulse_golang
+    restart: always
+    depends_on:
+      - timescaledb
+      - kafka
+    networks:
+      - pulse_network
+    environment:
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DATABASE_URL=${DATABASE_URL}
+    volumes:
+      - ./worker:/app
+    working_dir: /app
+    command: go run main.go
 
 volumes:
   pulse_db_data:
